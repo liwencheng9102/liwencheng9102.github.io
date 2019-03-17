@@ -14,23 +14,24 @@
     </div>
     <button id="begin">开始游戏</button>
     <span id="score">分数：0</span>
-    <select id="function">
-        <option value="1">鼠标</option>
-        <option value="2">键盘</option>
-    </select>
     <style>
-        body {
+        /* body {
             background: url('./imgs/bc.jpg') no-repeat;
             background-size: cover;
-        }
+        } */
 
         .map {
-            width: 512px;
-            height: 650px;
-            margin: 5px auto;
+            /* width: 512px;
+            height: 650px; */
+            width: 100%;
+            height: 756px;
+            /* max-width: 420px; */
+            /* margin: 5px auto; */
             cursor: none;
             position: relative;
-            overflow: hidden;
+            /* overflow: hidden; */
+            background: url('./imgs/bg.jpg') no-repeat;
+            background-size: cover;
         }
 
         .scoreboard {
@@ -106,20 +107,6 @@
             top: 20px;
             left: 20px;
         }
-
-        #function {
-            width: 100px;
-            font-size: 15px;
-            height: 50px;
-            background: rgb(12, 93, 185);
-            border-radius: 24px;
-            padding: 0 10px;
-            outline: none;
-            border: none;
-            position: absolute;
-            top: 180px;
-            left: 20px;
-        }
     </style>
 </head>
 
@@ -131,24 +118,18 @@
         var map_height = -756;
         var begin = document.getElementById('begin')
         var scoreBox = document.getElementById('score')
-        var consoleFunction = document.getElementById('function')
         var scoreboard = document.getElementsByClassName('scoreboard')[0]
         var diescore = document.getElementsByClassName('diescore')[0]
         var historyscore = document.getElementsByClassName('historyscore')[0]
         var resetBtn = document.getElementsByClassName('reset')[0]
 
-        var left = false;
-        var right = false;
-        var up = false;
-        var down = false; //为了键盘控制设置的全局变量
-
-        // map.style.background = 'url(imgs/bg.jpg) no-repeat 0' + map_height + "px"
         function map_move() {
             map_height += 5;
             if (map_height > 0) {
                 map_height = -756;
             }
-            map.style.background = 'url(imgs/bg.jpg) no-repeat 0' + map_height + "px";
+            // map.style.background = 'url(imgs/bg.jpg) no-repeat 0' + map_height + "px";
+            map.style.backgroundPosition='0' + map_height + "px";
         }
 
         //创建用户飞机 
@@ -164,6 +145,7 @@
         User.prototype.createUser = function () {
             // if (this.userf == null) {
             this.userf = document.createElement("img");
+            this.userf.className = 'userplane'
             this.userf.style.width = this.width + "px";
             this.userf.style.height = this.height + "px";
             this.userf.style.position = "absolute";
@@ -174,36 +156,68 @@
             map.appendChild(this.userf);
             // }
         }
-        User.prototype.UsermouseMove = function (x, y) {
-            this.x = x;
-            this.y = y;
-            this.userf.style.left = x + "px";
-            this.userf.style.top = y + "px";
-        }
-        User.prototype.UserkeyboardMove = function () {
-            time_keyboardMove = setInterval(function () {
-                if (right) {
-                    if (user.x < 400) {
-                        user.x += 8
-                         user.userf.style.left = user.x + 'px'
-                    }
-                } else if (left) {
-                    if (user.x > 0) {
-                        user.x -= 8
-                        user.userf.style.left = user.x + 'px'
-                    }
-                } else if (up) {
-                    if (user.y > 5) {
-                        user.y -= 8
-                        user.userf.style.top = user.y + 'px'
-                    }
-                } else if (down) {
-                    if (user.y < 570) {
-                        user.y += 8
-                        user.userf.style.top = user.y + 'px'
-                    }
+        User.prototype.usermouseMove = function () {
+            var flag = false;
+            var userplane = document.getElementsByClassName('userplane')[0];
+            var cur = {
+                x: 0,
+                y: 0
+            }
+            var nx, ny, dx, dy;
+
+            function down() {
+                flag = true;
+                var touch;
+                if (event.touches) {
+                    touch = event.touches[0];
+                } else {
+                    touch = event;
                 }
-            }, 15)
+                cur.x = touch.clientX;
+                cur.y = touch.clientY;
+                dx = userplane.offsetLeft;
+                dy = userplane.offsetTop;
+            }
+
+            function move() {
+                if (flag) {
+                    var touch;
+                    if (event.touches) {
+                        touch = event.touches[0];
+                    } else {
+                        touch = event;
+                    }
+                    nx = touch.clientX - cur.x;
+                    ny = touch.clientY - cur.y;
+                    user.x = dx + nx;
+                    user.y = dy + ny;
+                    userplane.style.left = user.x + "px";
+                    userplane.style.top = user.y + "px";
+                }
+            }
+            //鼠标释放时候的函数
+            function end() {
+                flag = false;
+            }
+
+            userplane.addEventListener("mousedown", function () {
+                down();
+            }, false);
+            userplane.addEventListener("touchstart", function () {
+                down();
+            }, false)
+            userplane.addEventListener("mousemove", function () {
+                move();
+            }, false);
+            userplane.addEventListener("touchmove", function () {
+                move();
+            }, false)
+            document.body.addEventListener("mouseup", function () {
+                end();
+            }, false);
+            userplane.addEventListener("touchend", function () {
+                end();
+            }, false);
         }
 
         // 创建子弹 
@@ -325,7 +339,7 @@
                 clearInterval(time_createEnemy);
                 clearInterval(time_EnemyMove);
                 clearInterval(time_mapMove);
-                clearInterval(time_keyboardMove);
+
                 map.style.cursor = 'auto';
                 map.onmousemove = null;
                 // return;
@@ -418,52 +432,7 @@
                 }
             }, 15)
 
-
-            if (consoleFunction.value == 1) {
-                //创建地图鼠标移动事件 
-                map.onmousemove = function (e) {
-                    //鼠标位置-偏移量-用户飞机宽/高
-                    var x = e.pageX - this.offsetLeft - user.width / 2;
-                    var y = e.pageY - this.offsetTop - user.height / 2;
-                    user.UsermouseMove(x, y);
-                }
-            } else if (consoleFunction.value == 2) {
-                //键盘移动事件
-                user.UserkeyboardMove();
-                // 设置按键控制飞机方向
-                document.onkeydown = function () {
-                    switch (window.event.keyCode) {
-                        case 37:
-                            left = true;
-                            break;
-                        case 38:
-                            up = true;
-                            break;
-                        case 39:
-                            right = true;
-                            break;
-                        case 40:
-                            down = true;
-                            break;
-                    }
-                }
-                document.onkeyup = function () {
-                    switch (window.event.keyCode) {
-                        case 37:
-                            left = false;
-                            break;
-                        case 38:
-                            up = false;
-                            break;
-                        case 39:
-                            right = false;
-                            break;
-                        case 40:
-                            down = false;
-                            break;
-                    }
-                }
-            }
+            user.usermouseMove()
         }
 
         //开始游戏
