@@ -15,21 +15,12 @@
     <button id="begin">开始游戏</button>
     <span id="score">分数：0</span>
     <style>
-        /* body {
-            background: url('./imgs/bc.jpg') no-repeat;
-            background-size: cover;
-        } */
-
         .map {
-            /* width: 512px;
-            height: 650px; */
             width: 100%;
-            height: 756px;
-            /* max-width: 420px; */
-            /* margin: 5px auto; */
+            height: 1300px;
             cursor: none;
             position: relative;
-            /* overflow: hidden; */
+            overflow: hidden;
             background: url('./imgs/bg.jpg') no-repeat;
             background-size: cover;
         }
@@ -42,8 +33,8 @@
             border-radius: 25%;
             text-align: center;
             position: absolute;
-            left: 106px;
-            top: 150px;
+            left: 350px;
+            top: 450px;
             z-index: 99;
             transform: scale(0);
             transition: all .3s;
@@ -126,10 +117,9 @@
         function map_move() {
             map_height += 5;
             if (map_height > 0) {
-                map_height = -756;
+                map_height = -1446;
             }
-            // map.style.background = 'url(imgs/bg.jpg) no-repeat 0' + map_height + "px";
-            map.style.backgroundPosition='0' + map_height + "px";
+            map.style.backgroundPosition = '0' + map_height + "px";
         }
 
         //创建用户飞机 
@@ -138,8 +128,8 @@
             this.width = 106;
             this.height = 76;
             this.userf = null;
-            this.x = 203;
-            this.y = 569;
+            this.x;
+            this.y;
             this.scoring;
         }
         User.prototype.createUser = function () {
@@ -151,7 +141,7 @@
             this.userf.style.position = "absolute";
             // this.userf.style.zIndex = 1;
             this.userf.src = "./imgs/fj.png";
-            this.userf.style.left = "204px";
+            this.userf.style.left = "429px";
             this.userf.style.bottom = "5px";
             map.appendChild(this.userf);
             // }
@@ -200,24 +190,12 @@
                 flag = false;
             }
 
-            userplane.addEventListener("mousedown", function () {
-                down();
-            }, false);
-            userplane.addEventListener("touchstart", function () {
-                down();
-            }, false)
-            userplane.addEventListener("mousemove", function () {
-                move();
-            }, false);
-            userplane.addEventListener("touchmove", function () {
-                move();
-            }, false)
-            document.body.addEventListener("mouseup", function () {
-                end();
-            }, false);
-            userplane.addEventListener("touchend", function () {
-                end();
-            }, false);
+            userplane.addEventListener("mousedown", down, false);
+            userplane.addEventListener("touchstart", down, false)
+            userplane.addEventListener("mousemove", move, false);
+            userplane.addEventListener("touchmove", move, false)
+            document.body.addEventListener("mouseup", end, false);
+            userplane.addEventListener("touchend", end, false);
         }
 
         // 创建子弹 
@@ -273,6 +251,72 @@
                         //记录分数
                         x += enemyarr[key].score;
                         user.scoring = x;
+
+                        if (x >= 1000) {
+                            clearInterval(time_createEnemy);
+                            clearInterval(time_EnemyMove);
+                            //实例化敌机 调用创建方法
+                            time_createEnemy = setInterval(function () {
+                                //利用随机数控制大小敌机创建比例
+                                // (width, height, blood, score, s)
+                                var random = Math.floor(Math.random() * 10)
+                                if (random > 7) {
+                                    enemy = new Enemy(116, 82, 7, 300, './imgs/dj1.png');
+                                    enemy.createEnemy();
+                                    em_array.push(enemy);
+                                } else if (random > 2) {
+                                    enemy = new Enemy(98, 76, 3, 100, './imgs/dj2.png');
+                                    enemy.createEnemy();
+                                    em_array.push(enemy);
+                                } else {
+                                    enemy = new Enemy(104, 74, 5, 200, './imgs/dj3.png');
+                                    enemy.createEnemy();
+                                    em_array.push(enemy);
+                                }
+                            }, 666);
+
+                            //调用敌机移动方法
+                            time_EnemyMove = setInterval(function () {
+                                if (em_array.length > 0) {
+                                    for (var key in em_array) {
+                                        em_array[key].EnemyMove(key, em_array);
+                                    }
+                                }
+                            }, 10)
+                        }
+                        if (x >= 2000) {
+                            clearInterval(time_createEnemy);
+                            clearInterval(time_EnemyMove);
+                            //实例化敌机 调用创建方法
+                            time_createEnemy = setInterval(function () {
+                                //利用随机数控制大小敌机创建比例
+                                // (width, height, blood, score, s)
+                                var random = Math.floor(Math.random() * 10)
+                                if (random > 7) {
+                                    enemy = new Enemy(116, 82, 7, 300, './imgs/dj1.png');
+                                    enemy.createEnemy();
+                                    em_array.push(enemy);
+                                } else if (random > 2) {
+                                    enemy = new Enemy(98, 76, 3, 100, './imgs/dj2.png');
+                                    enemy.createEnemy();
+                                    em_array.push(enemy);
+                                } else {
+                                    enemy = new Enemy(104, 74, 5, 200, './imgs/dj3.png');
+                                    enemy.createEnemy();
+                                    em_array.push(enemy);
+                                }
+                            }, 333);
+
+                            //调用敌机移动方法
+                            time_EnemyMove = setInterval(function () {
+                                if (em_array.length > 0) {
+                                    for (var key in em_array) {
+                                        em_array[key].EnemyMove(key, em_array);
+                                    }
+                                }
+                            }, 5)
+                        }
+
                         scoreBox.innerHTML = '分数：' + x;
                         diescore.innerHTML = '得分：' + x;
 
@@ -312,7 +356,7 @@
             this.enemyf.src = this.src;
             map.appendChild(this.enemyf);
             //随机产生起始线不同位置的敌机
-            this.x = Math.random() * (512 - this.width);
+            this.x = Math.random() * (964 - this.width);
             this.y = -this.height;
             // }
             this.enemyf.style.left = this.x + "px";
@@ -321,7 +365,7 @@
         Enemy.prototype.EnemyMove = function (index, array) {
             //改变敌机的top值 赋回去
             this.y += this.speed;
-            if (this.y > 650) { //敌机飞出界面 移除创建的敌机及实例化对象
+            if (this.y > 1300) { //敌机飞出界面 移除创建的敌机及实例化对象
                 // this.enemyf.remove();
                 map.removeChild(this.enemyf);
                 array.splice(index, 1); //移除实例化数组中的敌机 利用数组截取的方法
@@ -339,9 +383,7 @@
                 clearInterval(time_createEnemy);
                 clearInterval(time_EnemyMove);
                 clearInterval(time_mapMove);
-
                 map.style.cursor = 'auto';
-                map.onmousemove = null;
                 // return;
             }
             //
@@ -423,6 +465,7 @@
                     em_array.push(enemy);
                 }
             }, 1000);
+
             //调用敌机移动方法
             time_EnemyMove = setInterval(function () {
                 if (em_array.length > 0) {
