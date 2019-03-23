@@ -1,3 +1,7 @@
+body {
+    cursor: pointer;
+}
+
 #wrap {
     width: 343px;
     height: 480px;
