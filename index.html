@@ -64,7 +64,7 @@
         this.offTop;
     }
     Bird.prototype.move = function () {
-        this.speed -= 2
+        this.speed -= 1
         if (this.speed > 0) {
             birdBox.className = 'birdUp'
         } else if (this.speed == 0) {
@@ -192,7 +192,7 @@
         birdMove_time = setInterval(function () {
             bird.move()
             bird.collision(ductarr)
-        }, 100)
+        }, 50)
 
         ductCreat_time = setInterval(function () {
             duct = new Duct();
@@ -208,7 +208,7 @@
         }, 20)
     }
     document.onclick = function () {
-        bird.speed = 12
+        bird.speed = 8
     }
 
     //重置按钮
