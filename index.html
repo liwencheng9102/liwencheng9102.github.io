@@ -1,538 +1,267 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
-<head lang="en">
+<head>
     <meta charset="UTF-8">
-    <title>雷电2</title>
-    <div class="map">
-        <div class="scoreboard">
-            <h3>Game Over!</h3>
-            <h5 class="historyscore">历史最高分：</h5>
-            <span class="diescore">得分：0</span>
-            <button class="reset">确定</button>
-        </div>
-    </div>
-    <button id="begin">开始游戏</button>
-    <span id="score">分数：0</span>
-    <style>
-        .map {
-            width: 100%;
-            height: 1300px;
-            cursor: none;
-            position: relative;
-            overflow: hidden;
-            background: url('./imgs/bg.jpg') no-repeat;
-            background-size: cover;
-        }
-
-        .scoreboard {
-            width: 300px;
-            height: 240px;
-            background: rgba(245, 245, 245, 0.5);
-            border: 1px solid blue;
-            border-radius: 25%;
-            text-align: center;
-            position: absolute;
-            left: 350px;
-            top: 450px;
-            z-index: 99;
-            transform: scale(0);
-            transition: all .3s;
-        }
-
-        .scoreboard .reset {
-            width: 50px;
-            height: 30px;
-            font-size: 15px;
-            font-weight: bold;
-            border-radius: 25%;
-            border: none;
-            outline: none;
-            cursor: pointer;
-            color: #8aa0e9;
-            background: rgba(245, 245, 245, 0.9);
-            display: block;
-            margin: 0 auto;
-            margin-top: 20px;
-        }
-
-        .scoreboard h3,
-        .scoreboard span,
-        .scoreboard h5 {
-            font-size: 20px;
-            font-weight: bold;
-            color: white;
-        }
-
-        #begin {
-            width: 100px;
-            height: 50px;
-            border: 1px solid black;
-            border-radius: 25px;
-            outline: none;
-            background: rgb(24, 102, 190);
-            float: left;
-            font-size: 15px;
-            cursor: pointer;
-            position: absolute;
-            top: 100px;
-            left: 20px;
-        }
-
-        #begin:hover {
-            background: lightblue;
-        }
-
-        #score {
-            width: 100px;
-            height: 50px;
-            border: 1px solid black;
-            border-radius: 25px;
-            background: rgb(12, 93, 185);
-            box-sizing: border-box;
-            float: left;
-            line-height: 50px;
-            text-align: center;
-            font-size: 15px;
-            position: absolute;
-            top: 20px;
-            left: 20px;
-        }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Flappy bird</title>
+    <link rel="stylesheet" href="./css/main.css">
 </head>
 
 <body>
-    <script>
-        //创建地图 地图移动
-        var x = 0;
-        var map = document.getElementsByClassName("map")[0];
-        var map_height = -756;
-        var begin = document.getElementById('begin')
-        var scoreBox = document.getElementById('score')
-        var scoreboard = document.getElementsByClassName('scoreboard')[0]
-        var diescore = document.getElementsByClassName('diescore')[0]
-        var historyscore = document.getElementsByClassName('historyscore')[0]
-        var resetBtn = document.getElementsByClassName('reset')[0]
-
-        function map_move() {
-            map_height += 5;
-            if (map_height > 0) {
-                map_height = -1446;
-            }
-            map.style.backgroundPosition = '0' + map_height + "px";
-        }
-
-        //创建用户飞机 
-        var user = new User(); //实例化的全局变量
-        function User() {
-            this.width = 106;
-            this.height = 76;
-            this.userf = null;
-            this.x;
-            this.y;
-            this.scoring;
-        }
-        User.prototype.createUser = function () {
-            // if (this.userf == null) {
-            this.userf = document.createElement("img");
-            this.userf.className = 'userplane'
-            this.userf.style.width = this.width + "px";
-            this.userf.style.height = this.height + "px";
-            this.userf.style.position = "absolute";
-            // this.userf.style.zIndex = 1;
-            this.userf.src = "./imgs/fj.png";
-            this.userf.style.left = "429px";
-            this.userf.style.bottom = "5px";
-            map.appendChild(this.userf);
-            // }
-        }
-        User.prototype.usermouseMove = function () {
-            var flag = false;
-            var userplane = document.getElementsByClassName('userplane')[0];
-            var cur = {
-                x: 0,
-                y: 0
-            }
-            var nx, ny, dx, dy;
-
-            function down() {
-                flag = true;
-                var touch;
-                if (event.touches) {
-                    touch = event.touches[0];
-                } else {
-                    touch = event;
-                }
-                cur.x = touch.clientX;
-                cur.y = touch.clientY;
-                dx = userplane.offsetLeft;
-                dy = userplane.offsetTop;
-            }
-
-            function move() {
-                if (flag) {
-                    var touch;
-                    if (event.touches) {
-                        touch = event.touches[0];
-                    } else {
-                        touch = event;
-                    }
-                    nx = touch.clientX - cur.x;
-                    ny = touch.clientY - cur.y;
-                    user.x = dx + nx;
-                    user.y = dy + ny;
-                    userplane.style.left = user.x + "px";
-                    userplane.style.top = user.y + "px";
-                }
-            }
-            //鼠标释放时候的函数
-            function end() {
-                flag = false;
-            }
-
-            userplane.addEventListener("mousedown", down, false);
-            userplane.addEventListener("touchstart", down, false)
-            userplane.addEventListener("mousemove", move, false);
-            userplane.addEventListener("touchmove", move, false)
-            document.body.addEventListener("mouseup", end, false);
-            userplane.addEventListener("touchend", end, false);
-        }
-
-        // 创建子弹 
-        var bullet = new Bullet();
-
-        function Bullet() {
-            this.width = 3;
-            this.height = 17;
-            this.bulletf = null;
-            this.x;
-            this.y;
-        }
-        Bullet.prototype.creatBullet = function () { //构造创建子弹的方法
-            // if (this.bulletf == null) {
-            this.bulletf = document.createElement("img");
-            this.bulletf.style.width = this.width + "px";
-            this.bulletf.style.height = this.height + "px";
-            this.bulletf.style.position = "absolute";
-            // this.bulletf.style.zIndex = 1;
-            this.bulletf.src = "./imgs/paodan.png";
-            map.appendChild(this.bulletf);
-            //子弹坐标 x=飞机left+飞机自身的一半-子弹自身一半
-            //y=飞机top-飞机自身的一半
-            this.x = parseInt(user.userf.style.left) + user.width / 2 - this.width / 2;
-            this.y = parseInt(user.userf.style.top) - user.height / 2 + 25;
-            // }
-        }
-        Bullet.prototype.BulletMove = function (index, array) { //构造子弹移动的方法
-            this.y -= 2; //子弹的top值
-            if (this.y <= 0) { //当子弹飞出屏幕 移除创建的子弹及其实例化对象
-                this.bulletf.remove();
-                array.splice(index, 1); //移除实例化数组中的子弹 利用数组截取的方法
-            }
-            this.bulletf.style.left = this.x + "px";
-            this.bulletf.style.top = this.y + "px";
-        }
-        Bullet.prototype.BulletEnemy = function (enemyarr, index, bulletarray) { //构造子弹打到敌机移除二者的方法
-            for (var key in enemyarr) { //遍历敌机数组
-                //判断 子弹x y 值范围在敌机区域 移除
-                if (this.x > enemyarr[key].x && this.x < enemyarr[key].x + enemyarr[key].width &&
-                    this.y > enemyarr[key].y - this.height && this.y < enemyarr[key].y + enemyarr[key].height) {
-                    //大小敌机血量不同 当血量为0时  移除被击打的敌机及其实例化对象
-                    enemyarr[key].blood -= 1;
-                    if (enemyarr[key].blood <= 0) {
-                        if (this.speed != 0) {
-                            enemyarr[key].enemyf.src = './imgs/bz.gif';
-                        }
-                        // enemyarr[key].enemyf.remove();
-                        // enemyarr.splice(key, 1);
-                        enemyarr[key].speed = 0;
-                        enemyarr[key].time = 10;
-
-                        //记录分数
-                        x += enemyarr[key].score;
-                        user.scoring = x;
-
-                        if (x >= 1000) {
-                            clearInterval(time_createEnemy);
-                            clearInterval(time_EnemyMove);
-                            //实例化敌机 调用创建方法
-                            time_createEnemy = setInterval(function () {
-                                //利用随机数控制大小敌机创建比例
-                                // (width, height, blood, score, s)
-                                var random = Math.floor(Math.random() * 10)
-                                if (random > 7) {
-                                    enemy = new Enemy(116, 82, 7, 300, './imgs/dj1.png');
-                                    enemy.createEnemy();
-                                    em_array.push(enemy);
-                                } else if (random > 2) {
-                                    enemy = new Enemy(98, 76, 3, 100, './imgs/dj2.png');
-                                    enemy.createEnemy();
-                                    em_array.push(enemy);
-                                } else {
-                                    enemy = new Enemy(104, 74, 5, 200, './imgs/dj3.png');
-                                    enemy.createEnemy();
-                                    em_array.push(enemy);
-                                }
-                            }, 666);
-
-                            //调用敌机移动方法
-                            time_EnemyMove = setInterval(function () {
-                                if (em_array.length > 0) {
-                                    for (var key in em_array) {
-                                        em_array[key].EnemyMove(key, em_array);
-                                    }
-                                }
-                            }, 10)
-                        }
-                        if (x >= 2000) {
-                            clearInterval(time_createEnemy);
-                            clearInterval(time_EnemyMove);
-                            //实例化敌机 调用创建方法
-                            time_createEnemy = setInterval(function () {
-                                //利用随机数控制大小敌机创建比例
-                                // (width, height, blood, score, s)
-                                var random = Math.floor(Math.random() * 10)
-                                if (random > 7) {
-                                    enemy = new Enemy(116, 82, 7, 300, './imgs/dj1.png');
-                                    enemy.createEnemy();
-                                    em_array.push(enemy);
-                                } else if (random > 2) {
-                                    enemy = new Enemy(98, 76, 3, 100, './imgs/dj2.png');
-                                    enemy.createEnemy();
-                                    em_array.push(enemy);
-                                } else {
-                                    enemy = new Enemy(104, 74, 5, 200, './imgs/dj3.png');
-                                    enemy.createEnemy();
-                                    em_array.push(enemy);
-                                }
-                            }, 333);
-
-                            //调用敌机移动方法
-                            time_EnemyMove = setInterval(function () {
-                                if (em_array.length > 0) {
-                                    for (var key in em_array) {
-                                        em_array[key].EnemyMove(key, em_array);
-                                    }
-                                }
-                            }, 5)
-                        }
-
-                        scoreBox.innerHTML = '分数：' + x;
-                        diescore.innerHTML = '得分：' + x;
-
-                        if (user.scoring > getCookie('topScore')) {
-                            setCookie('topScore', user.scoring, 3)
-                        }
-                    }
-                    this.bulletf.remove();
-                    bulletarray.splice(index, 1);
-                    //同时移除击打中敌机的子弹及实例化对象
-                }
-            }
-        }
-
-        //创建敌机
-        var enemy = new Enemy();
-
-        function Enemy(width, height, blood, score, s) {
-
-            this.width = width;
-            this.height = height;
-            this.blood = blood;
-            this.score = score;
-            this.enemyf = null;
-            this.src = s;
-            this.speed = 2;
-            this.x;
-            this.y;
-        }
-        Enemy.prototype.createEnemy = function () {
-            // if (this.enemyf == null) {
-            this.enemyf = document.createElement("img");
-            this.enemyf.style.width = this.width + "px";
-            this.enemyf.style.height = this.height + "px";
-            this.enemyf.style.position = "absolute";
-            // this.enemyf.style.zIndex = 2;
-            this.enemyf.src = this.src;
-            map.appendChild(this.enemyf);
-            //随机产生起始线不同位置的敌机
-            this.x = Math.random() * (964 - this.width);
-            this.y = -this.height;
-            // }
-            this.enemyf.style.left = this.x + "px";
-            this.enemyf.style.top = this.y + "px";
-        }
-        Enemy.prototype.EnemyMove = function (index, array) {
-            //改变敌机的top值 赋回去
-            this.y += this.speed;
-            if (this.y > 1300) { //敌机飞出界面 移除创建的敌机及实例化对象
-                // this.enemyf.remove();
-                map.removeChild(this.enemyf);
-                array.splice(index, 1); //移除实例化数组中的敌机 利用数组截取的方法
-            }
-            this.enemyf.style.top = this.y + "px";
-
-            //在敌机下落过程中判断是否与飞机相撞 相撞游戏结束
-            if (user.x > this.x - user.width + 15 && user.x < this.x + this.width - 15 &&
-                user.y > this.y - user.height + 15 && user.y < this.y + this.height - 15) {
-                // alert("Game over");
-                scoreboard.style.transform = 'scale(1)';
-                historyscore.innerHTML = '历史最高分：' + getCookie('topScore');
-                clearInterval(time_creatBullet);
-                clearInterval(time_BulletMove);
-                clearInterval(time_createEnemy);
-                clearInterval(time_EnemyMove);
-                clearInterval(time_mapMove);
-                map.style.cursor = 'auto';
-                // return;
-            }
-            //
-            if (this.speed == 0 && this.blood <= 0 && this.time) {
-                this.time--;
-            }
-
-            if (this.time <= 0) {
-                for (var key in em_array) {
-                    if (em_array[key].blood <= 0) {
-                        em_array[key].enemyf.remove();
-                        em_array.splice(key, 1);
-                    }
-                }
-            }
-        }
-
-        //定义定时器变量
-        var time_creatBullet;
-        var time_BulletMove;
-        var time_createEnemy;
-        var time_EnemyMove;
-        var time_mapMove
-        var time_keyboardMove
-        //定义存储子弹的数组  存储敌机的数组
-        var bulletarr = [];
-        var em_array = [];
-
-
-        // 实例化子弹 调用创建方法
-        function beginGame() {
-
-            user.createUser();
-            time_mapMove = setInterval('map_move()', 50); //移动地图
-
-            time_creatBullet = setInterval(function () {
-                bullet = new Bullet();
-                bullet.creatBullet();
-                bulletarr.push(bullet);
-            }, 150);
-
-            //调用子弹移动方法
-            time_BulletMove = setInterval(function () {
-                if (bulletarr.length > 0) {
-                    for (var i = 0; i < bulletarr.length; i++) {
-                        bulletarr[i].BulletMove(i, bulletarr);
-                        if (em_array.length > 0) {
-                            if (bulletarr[i] == undefined) return;
-                            bulletarr[i].BulletEnemy(em_array, i, bulletarr);
-                            // for (var key in em_array) {
-                            //     if (em_array[key].time == undefined) {
-
-                            //     }else{
-                            //         return;
-                            //     }
-                            // }
-                        }
-                    }
-                }
-            }, 5);
-
-
-            //实例化敌机 调用创建方法
-            time_createEnemy = setInterval(function () {
-                //利用随机数控制大小敌机创建比例
-                // (width, height, blood, score, s)
-                var random = Math.floor(Math.random() * 10)
-                if (random > 7) {
-                    enemy = new Enemy(116, 82, 7, 300, './imgs/dj1.png');
-                    enemy.createEnemy();
-                    em_array.push(enemy);
-                } else if (random > 2) {
-                    enemy = new Enemy(98, 76, 3, 100, './imgs/dj2.png');
-                    enemy.createEnemy();
-                    em_array.push(enemy);
-                } else {
-                    enemy = new Enemy(104, 74, 5, 200, './imgs/dj3.png');
-                    enemy.createEnemy();
-                    em_array.push(enemy);
-                }
-            }, 1000);
-
-            //调用敌机移动方法
-            time_EnemyMove = setInterval(function () {
-                if (em_array.length > 0) {
-                    for (var key in em_array) {
-                        em_array[key].EnemyMove(key, em_array);
-                    }
-                }
-            }, 15)
-
-            user.usermouseMove()
-        }
-
-        //开始游戏
-        begin.onclick = function () {
-            beginGame()
-        }
-
-        //cookie
-
-        function setCookie(key, value, exdays) {
-            var d = new Date()
-            d.setTime(d.getTime() + exdays * 24 * 60 * 60 * 1000)
-            document.cookie = key + '=' + value + ';' + "expires=" + d + ';path=/'
-        }
-
-        function getCookie(key) {
-            var str = document.cookie
-            var arr = str.split(';')
-            var value
-            for (var i = 0; i < arr.length; i++) {
-                arr[i] = arr[i].trim()
-            }
-            var x = arr.filter(function (element) {
-                return !element.indexOf(key)
-            })
-            if (x[0]) {
-                value = x[0].slice(x[0].indexOf('=') + 1)
-            } else {
-                value = ''
-            }
-            return value
-        }
-
-        //重置
-        function reset() {
-            for (var i = 0; i < em_array.length; i++) {
-                em_array[i].enemyf.remove()
-                em_array.splice(i, 1);
-            }
-            for (var i = 0; i < bulletarr.length; i++) {
-                bulletarr[i].bulletf.remove()
-                bulletarr.splice(i, 1);
-            }
-
-            scoreboard.style.transform = 'scale(0)';
-            map.removeChild(user.userf)
-            user.x = 203;
-            user.y = 569;
-            user.scoring = 0;
-            scoreBox.innerHTML = '分数：0';
-            diescore.innerHTML = '得分：0';
-            x = 0
-        }
-        resetBtn.onclick = function () {
-            reset()
-        }
-    </script>
+    <div id="wrap">
+        <div id="Score"><span></span></div>
+        <div id="title">
+            <img src="img/head.jpg" />
+            <div id="beginBird"></div>
+        </div>
+        <div id="beginBtn"></div>
+        <div id="banner"></div>
+        <div id="bird" class="birdAclinic"></div>
+        <div class="box">
+            <div id="gameover">
+                <img src="./img/game_over.jpg" alt="">
+            </div>
+            <div id="message">
+                <span id="dieScore">0</span>
+                <span id="history">0</span>
+            </div>
+            <div>
+                <img id="ok" src="./img/ok.jpg" alt="">
+            </div>
+        </div>
+    </div>
 </body>
+<script>
+    var wrap = document.getElementById('wrap');
+    var beginBtn = document.getElementById('beginBtn');
+    var title = document.getElementById('title')
+    var banner = document.getElementById('banner')
+    var birdBox = document.getElementById('bird');
+    var scoreBox = document.getElementById('Score');
+    var span = document.querySelector('span')
+    var box = document.getElementsByClassName('box')[0];
+    var ok = document.getElementById('ok')
+    var dieScore = document.getElementById('dieScore')
+    var best = document.getElementById('history')
+
+    var banner_left = 0;
+
+    function bannerMove() {
+        banner_left -= 2;
+        if (banner_left <= -343) {
+            banner_left = 0;
+        }
+        banner.style.background = 'url(./img/slider.jpg)' + banner_left + 'px 0';
+    }
+
+    var bird = new Bird();
+
+    function Bird() {
+        this.speed = 0;
+        this.scoring = 0;
+        this.offTop;
+    }
+    Bird.prototype.move = function () {
+        this.speed -= 2
+        if (this.speed > 0) {
+            birdBox.className = 'birdUp'
+        } else if (this.speed == 0) {
+            birdBox.className = 'birdAclinic'
+        } else if (this.speed < 0) {
+            birdBox.className = 'birdDown'
+        }
+        this.offTop = birdBox.offsetTop - this.speed;
+        birdBox.style.top = this.offTop + 'px';
+        if (this.offTop > 393 || this.offTop < 0) {
+            // debugger
+            box.style.transform = 'scale(1)'
+            clearInterval(bannerMove_time)
+            clearInterval(birdMove_time)
+            clearInterval(ductCreat_time)
+            clearInterval(ductMove_time)
+        }
+    }
+    Bird.prototype.collision = function (array) {
+        for (var key in array) {
+
+            var upDot_top = parseInt(getComputedStyle(array[key].upDuct).height)
+            var upDot_left = parseInt(getComputedStyle(array[key].ductBox).left)
+            var downDot_top = 423 - parseInt(getComputedStyle(array[key].downDuct).height)
+            if ((70 > upDot_left && this.offTop < upDot_top && 70 < upDot_left + 62 + 35) || (70 > upDot_left &&
+                    this.offTop + 30 > downDot_top && 70 < upDot_left + 62 + 35)) {
+                // debugger
+                box.style.transform = 'scale(1)'
+                clearInterval(bannerMove_time)
+                clearInterval(birdMove_time)
+                clearInterval(ductCreat_time)
+                clearInterval(ductMove_time)
+            }
+        }
+    }
+
+    var duct;
+
+    function Duct() {
+        this.score = 1;
+        this.ductBox
+        this.left = 343
+        this.speed = 2
+        this.upDuct
+        this.downDuct
+    }
+    Duct.prototype.creat = function () {
+        this.ductBox = document.createElement('div')
+        this.ductBox.className = 'duct'
+        wrap.appendChild(this.ductBox)
+
+        //上管道
+        this.upDuct = document.createElement('div')
+        this.upDuct.className = 'upduct'
+        var randomHeight
+        var okNum = false
+        while (!okNum) {
+            okNum = true
+            randomHeight = Math.random() * 263
+            if (randomHeight < 60) {
+                okNum = false
+            }
+        }
+
+        this.upDuct.style.height = randomHeight + 'px'
+        this.ductBox.appendChild(this.upDuct)
+        var upImg = document.createElement('img')
+        upImg.src = './img/up_pipe.png'
+        this.upDuct.appendChild(upImg)
+
+        //下管道
+        this.downDuct = document.createElement('div')
+        this.downDuct.className = 'downduct'
+        this.downDuct.style.height = 323 - this.upDuct.offsetHeight + "px"
+        this.ductBox.appendChild(this.downDuct)
+        var downImg = document.createElement('img')
+        downImg.src = './img/down_pipe.png'
+        this.downDuct.appendChild(downImg)
+    }
+    Duct.prototype.move = function (index, array) {
+        // debugger
+        // if (bird.scoring>5) {
+        //     this.speed=4
+        // }else if(bird.scoring>10){
+        //     this.speed=6
+        // }
+        this.left -= this.speed;
+        this.ductBox.style.left = this.left + 'px'
+        if (this.left < -62) { //出界 移除创建的管道及实例化对象
+            wrap.removeChild(this.ductBox);
+            array.splice(index, 1); //移除实例化数组中的管道 利用数组截取的方法
+            //记录分数
+            bird.scoring += this.score;
+            dieScore.innerHTML = bird.scoring
+            if (bird.scoring > getCookie('topScore')) {
+                setCookie('topScore', bird.scoring, 3)
+            }
+            best.innerHTML = parseInt(getCookie('topScore')) 
+            if (bird.scoring < 10) {
+                scoreBox.style.background = 'url(./img/' + bird.scoring + '.jpg)';
+            } else if (bird.scoring >= 10) {
+                scoreBox.style.background = 'none'
+                span.innerHTML = bird.scoring
+            }
+        }
+    }
+
+    //游戏开始
+    var bannerMove_time
+    var birdMove_time
+    var ductCreat_time
+    var ductMove_time
+    var ductarr = []
+    beginBtn.onclick = function (e) {
+        e.stopPropagation()
+        wrap.appendChild(birdBox)
+        birdBox.style.display = 'block'
+        beginBtn.style.display = 'none'
+        title.style.display = 'none'
+
+        bannerMove_time = setInterval(function () {
+            bannerMove()
+        }, 20)
+
+        birdMove_time = setInterval(function () {
+            bird.move()
+            bird.collision(ductarr)
+        }, 100)
+
+        ductCreat_time = setInterval(function () {
+            duct = new Duct();
+            duct.creat();
+            ductarr.push(duct);
+        }, 3000)
+        ductMove_time = setInterval(function () {
+            if (ductarr.length > 0) {
+                for (var key in ductarr) {
+                    ductarr[key].move(key, ductarr);
+                }
+            }
+        }, 20)
+    }
+    document.onclick = function () {
+        bird.speed = 12
+    }
+
+    //重置按钮
+    function reset(array) {
+        for (var key in array) {
+            array[key].ductBox.remove();
+            array.splice(key, 1);
+        }
+        box.style.transform = 'scale(0)'
+        bird.speed = 0
+        bird.scoring = 0
+        birdBox.style.top = '100px'
+        wrap.removeChild(birdBox)
+        //移除旧鸟 
+
+        birdBox.style.display = 'block'
+        beginBtn.style.display = 'block'
+        title.style.display = 'block'
+
+        //分数重置
+        dieScore.innerHTML = 0
+        scoreBox.style.background = 'url(./img/0.jpg)'
+        span.innerHTML = ''
+    }
+    ok.onclick = function (e) {
+        e.stopPropagation()
+        reset(ductarr)
+    }
+
+    //cookie
+    function setCookie(key, value, exdays) {
+        var d = new Date()
+        d.setTime(d.getTime() + exdays * 24 * 60 * 60 * 1000)
+        document.cookie = key + '=' + value + ';' + "expires=" + d + ';path=/'
+    }
+    setCookie('topScore', 0 , 3)
+    function getCookie(key) {
+        var str = document.cookie
+        var arr = str.split(';')
+        var value
+        for (var i = 0; i < arr.length; i++) {
+            arr[i] = arr[i].trim()
+        }
+        var x = arr.filter(function (element) {
+            return !element.indexOf(key)
+        })
+        if (x[0]) {
+            value = x[0].slice(x[0].indexOf('=') + 1)
+        } else {
+            value = ''
+        }
+        return value
+    }
+</script>
 
 </html>
