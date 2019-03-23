@@ -210,7 +210,9 @@
     document.onclick = function () {
         bird.speed = 8
     }
-
+    document.ontouchstart=function(){
+        bird.speed = 8
+    }
     //重置按钮
     function reset(array) {
         for (var key in array) {
