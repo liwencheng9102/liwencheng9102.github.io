@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link href="./bootstrap/node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="./bootstrap/node_modules/bootstrap/dist/css/minireset.min.css">
+    <title>五子棋</title>
+    <style type="text/css">
+        canvas {
+            display: block;
+            margin: 60px auto;
+            box-shadow: -3px -3px 3px #efefef, 8px 8px 8px #b9b9b9;
+            background-color: blanchedalmond;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-fixed-top navbar-inverse" style="background-color: rgba(0,0,0,0.6); border: none">
+        <div class="container">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                    data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="./index.html">首页</a>
+            </div>
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <form class="navbar-form navbar-right">
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Search">
+                    </div>
+                    <button type="submit" class="btn btn-default glyphicon glyphicon-search" style="top:0"></button>
+                </form>
+            </div><!-- /.navbar-collapse -->
+        </div>
+    </nav>
+    <canvas id="canvas" width="760" height="760"></canvas>
+    
+    <!-- jQuery (Bootstrap 的所有 JavaScript 插件都依赖 jQuery，所以必须放在前边) -->
+ <script src="./bootstrap/node_modules/bootstrap/dist/js/jquery.min.js"></script>
+ <!-- 加载 Bootstrap 的所有 JavaScript 插件。你也可以根据需要只加载单个插件。 -->
+ <script src="./bootstrap/node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+    
+    <script>
+        //画棋盘
+        var canvas = document.getElementById("canvas");
+        var context = canvas.getContext("2d");
+        var flag = true;
+
+        //定义存储棋子的位置的二维数组
+        var num = [];
+        for (var i = 0; i < 15; i++) {
+            num[i] = [];
+            for (var j = 0; j < 15; j++) {
+                num[i][j] = 0;
+            }
+        }
+
+        function drawChessBorad() {
+            context.strokeStyle = "#bfbfbf"; // 绘制棋盘竖线
+            for (var i = 0; i < 15; i++) {
+                context.moveTo(30 + i * 50, 30);
+                context.lineTo(30 + i * 50, 730);
+                context.stroke();
+            }
+            for (var j = 0; j < 15; j++) { // 绘制棋盘横线
+                context.moveTo(30, 30 + j * 50);
+                context.lineTo(730, 30 + j * 50);
+                context.stroke();
+            }
+            context.fillStyle = "#bfbfbf";
+            context.fillRect(175, 175, 10, 10);
+            context.fillRect(375, 175, 10, 10);
+            context.fillRect(575, 175, 10, 10);
+            context.fillRect(175, 375, 10, 10);
+            context.fillRect(375, 375, 10, 10);
+            context.fillRect(575, 375, 10, 10);
+            context.fillRect(175, 575, 10, 10);
+            context.fillRect(375, 575, 10, 10);
+            context.fillRect(575, 575, 10, 10); //加粗矩形
+        }
+
+        window.onload = function () {
+            drawChessBorad();
+        } //display chessborad
+
+        function drawChess(i, j, flag) { //绘制棋子
+            context.beginPath();
+            context.arc(30 + i * 50, 30 + j * 50, 20, 0, Math.PI * 2);
+            context.closePath();
+            var grd = context.createRadialGradient(30 + i * 50, 30 + j * 50 - 10, 4, 30 + i * 50, 30 + j * 50 - 10, 24);
+            if (flag) { //黑棋
+                grd.addColorStop(0, "#636766");
+                grd.addColorStop(1, "#0a0a0a");
+                num[i][j] = 1;
+            } else { //白棋
+                grd.addColorStop(0, "#d1d1d1");
+                grd.addColorStop(1, "#f9f9f9");
+                num[i][j] = 2;
+            }
+            context.fillStyle = grd;
+            context.fill();
+        }
+
+        canvas.onclick = function (e) {
+            console.log(e);
+            var x = e.offsetX; //获取鼠标点击的位置的x轴坐标
+            var y = e.offsetY; //获取鼠标点击的位置的y轴坐标
+            var i = Math.floor((x - 10) / 50);
+            var j = Math.floor((y - 10) / 50);
+            if (num[i][j] == 0) {
+                drawChess(i, j, flag);
+                win(i, j, flag);
+                flag = !flag;
+            }
+        }
+
+        function clearChess() { //当canvas的高度或者宽度重新设置时将清空画布
+            canvas.height = canvas.height;
+            drawChessBorad();
+        }
+
+        //判断输赢
+        function win(i, j, flag) {
+            var count = [0, 0, 0, 0, 0, 0, 0, 0];
+            var state = [1, 1, 1, 1, 1, 1, 1, 1]; //遇到相同颜色值为1
+            var color = 1;
+            if (flag) {
+                color = 1;
+            } else {
+                color = 2;
+            }
+            for (var step = 1; step < 5; step++) {
+                if (state[0] == 1 && i - step >= 0 && j - step >= 0) {
+                    if (num[i - step][j - step] == color) {
+                        count[0]++;
+                    } else {
+                        state[0] = 2;
+                    } //遇到相异的颜色或者没有棋子
+                }
+                if (state[1] == 1 && i - step >= 0) {
+                    if (num[i - step][j] == color) {
+                        count[1]++;
+                    } else {
+                        state[1] = 2;
+                    }
+                }
+                if (state[2] == 1 && i - step >= 0 && j + step < 15) {
+                    if (num[i - step][j + step] == color) {
+                        count[2]++;
+                    } else {
+                        state[2] = 2;
+                    }
+                }
+                if (state[3] == 1 && j + step < 15) {
+                    if (num[i][j + step] == color) {
+                        count[3]++;
+                    } else {
+                        state[3] = 2;
+                    }
+                }
+                if (state[4] == 1 && i + step < 15 && j + step < 15) {
+                    if (num[i + step][j + step] == color) {
+                        count[4]++;
+                    } else {
+                        state[4] = 2;
+                    }
+                }
+                if (state[5] == 1 && i + step < 15) {
+                    if (num[i + step][j] == color) {
+                        count[5]++;
+                    } else {
+                        state[5] = 2;
+                    }
+                }
+                if (state[6] == 1 && i + step < 15 && j - step >= 0) {
+                    if (num[i + step][j - step] == color) {
+                        count[6]++;
+                    } else {
+                        state[6] = 2;
+                    }
+                }
+                if (state[7] == 1 && j - step >= 0) {
+                    if (num[i][j - step] == color) {
+                        count[7]++;
+                    } else {
+                        state[7] = 2;
+                    }
+                }
+            }
+            if ((count[0] + count[4] + 1) >= 5 || (count[1] + count[5] + 1) >= 5 || (count[2] + count[6] + 1) >= 5 ||
+                (count[3] + count[7] + 1) >= 5) {
+                if (flag) {
+                    alert("黑棋赢了");
+                } else {
+                    alert("白棋赢了");
+                }
+                clearChess();
+                for (var i = 0; i < 15; i++) {
+                    num[i] = [];
+                    for (var j = 0; j < 15; j++) {
+                        num[i][j] = 0;
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>
