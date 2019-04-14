@@ -177,7 +177,7 @@
                 y: 0
             }]
             score = 0;
-            var sp = document.getElementsByTagName('span')[0];
+            var sp = document.getElementsByTagName('span')[4];
             sp.innerHTML = '分数：' + score;
             this.direction = 'right';
             this.display();
@@ -252,7 +252,7 @@
                 });
                 //记录分数
                 score += 1;
-                var sp = document.getElementsByTagName('span')[0];
+                var sp = document.getElementsByTagName('span')[4];
                 sp.innerHTML = '分数：' + score;
 
                 map.removeChild(food.flag);
