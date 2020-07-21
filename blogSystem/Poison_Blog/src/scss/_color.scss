@@ -1,0 +1,13 @@
+$q-white: #fff;
+$q-gray: rgb(77, 85, 93);
+$q-lightgray: rgb(147,153,159);
+$q-blue: rgb(0, 160, 220);
+$q-dark: #141d27;
+$q-f5: #f5f5f5;
+$bg:#fafafa;
+$footer:#999AAA;
+$red: #e33e33;
+
+@function qqblack($opacity: 1) {
+  @return rgba(7, 17, 27, $opacity);
+}
